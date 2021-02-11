@@ -1,11 +1,10 @@
 package fs
 
 var OriginalPaths = []string{
-	"~/.hr",
+	"~/.findcare",
 }
 
 var AssetPaths = []string{
-
 	"assets",
 }
 

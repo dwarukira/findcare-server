@@ -1,7 +1,10 @@
 package config
 
 import (
+	"path/filepath"
 	"strings"
+
+	"github.com/dwarukira/findcare/pkg/fs"
 )
 
 // DetachServer tests if server should detach from console (daemon mode).
@@ -43,4 +46,19 @@ func (c *Config) HttpMode() string {
 // HttpCompression returns the http compression method (none or gzip).
 func (c *Config) HttpCompression() string {
 	return strings.ToLower(strings.TrimSpace(c.options.HttpCompression))
+}
+
+// TemplatesPath returns the server templates path.
+func (c *Config) TemplatesPath() string {
+	return filepath.Join(c.AssetsPath(), "templates")
+}
+
+// TemplateExists tests if a template with the given name exists (e.g. index.tmpl).
+func (c *Config) TemplateExists(name string) bool {
+	return fs.FileExists(filepath.Join(c.TemplatesPath(), name))
+}
+
+// StaticPath returns the static assets path.
+func (c *Config) StaticPath() string {
+	return filepath.Join(c.AssetsPath(), "static")
 }

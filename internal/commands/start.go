@@ -3,9 +3,17 @@ package commands
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/dwarukira/findcare/internal/config"
+	"github.com/dwarukira/findcare/internal/server"
+	"github.com/dwarukira/findcare/pkg/fs"
+	"github.com/dwarukira/findcare/pkg/txt"
+	"github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli"
 )
 
@@ -51,11 +59,67 @@ func startAction(ctx *cli.Context) error {
 	}
 
 	// pass this context down the chain
-	_, cancel := context.WithCancel(context.Background())
+	cctx, cancel := context.WithCancel(context.Background())
+
+	if err := conf.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// initialize the database
+	conf.InitDb()
+
+	// check if daemon is running, if not initialize the daemon
+	dctx := new(daemon.Context)
+	dctx.LogFileName = conf.LogFilename()
+	dctx.PidFileName = conf.PIDFilename()
+	dctx.Args = ctx.Args()
+
+	if !daemon.WasReborn() && conf.DetachServer() {
+		conf.Shutdown()
+		cancel()
+
+		if pid, ok := childAlreadyRunning(conf.PIDFilename()); ok {
+			log.Infof("daemon already running with process id %v\n", pid)
+			return nil
+		}
+
+		child, err := dctx.Reborn()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if child != nil {
+			if !fs.Overwrite(conf.PIDFilename(), []byte(strconv.Itoa(child.Pid))) {
+				log.Fatalf("failed writing process id to %s", txt.Quote(conf.PIDFilename()))
+			}
+
+			log.Infof("daemon started with process id %v\n", child.Pid)
+			return nil
+		}
+	}
+
+	if conf.ReadOnly() {
+		log.Infof("start: read-only mode enabled")
+	}
+
+	// start web server
+	go server.Start(cctx, conf)
+
+	// set up proper shutdown of daemon and web server
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
 
 	log.Info("shutting down...")
 
+	conf.Shutdown()
 	cancel()
+	err := dctx.Release()
+
+	if err != nil {
+		log.Error(err)
+	}
 
 	time.Sleep(3 * time.Second)
 

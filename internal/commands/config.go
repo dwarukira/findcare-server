@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/dwarukira/findcare/internal/config"
 	"github.com/urfave/cli"
@@ -18,6 +20,8 @@ var ConfigCommand = cli.Command{
 func configAction(ctx *cli.Context) error {
 	conf := config.NewConfig(ctx)
 
+	dbDriver := conf.DatabaseDriver()
+
 	fmt.Printf("%-25s VALUE\n", "NAME")
 
 	// Feature flags.
@@ -28,13 +32,30 @@ func configAction(ctx *cli.Context) error {
 	fmt.Printf("%-25s %s\n", "config-path", conf.ConfigPath())
 
 	// Logging.
-	// fmt.Printf("%-25s %s\n", "log-level", conf.LogLevel())
-	// fmt.Printf("%-25s %s\n", "log-filename", conf.LogFilename())
+	fmt.Printf("%-25s %s\n", "log-level", conf.LogLevel())
+	fmt.Printf("%-25s %s\n", "log-filename", conf.LogFilename())
+
+	// Asset path and file names.
+	fmt.Printf("%-25s %s\n", "static-path", conf.StaticPath())
+	// fmt.Printf("%-25s %s\n", "build-path", conf.BuildPath())
+	// fmt.Printf("%-25s %s\n", "img-path", conf.ImgPath())
+	fmt.Printf("%-25s %s\n", "templates-path", conf.TemplatesPath())
 
 	// HTTP server configuration.
 	fmt.Printf("%-25s %s\n", "http-host", conf.HttpHost())
 	fmt.Printf("%-25s %d\n", "http-port", conf.HttpPort())
 	fmt.Printf("%-25s %s\n", "http-mode", conf.HttpMode())
+
+	// Database configuration.
+	fmt.Printf("%-25s %s\n", "database-driver", dbDriver)
+	fmt.Printf("%-25s %s\n", "database-server", conf.DatabaseServer())
+	fmt.Printf("%-25s %s\n", "database-host", conf.DatabaseHost())
+	fmt.Printf("%-25s %s\n", "database-port", conf.DatabasePortString())
+	fmt.Printf("%-25s %s\n", "database-name", conf.DatabaseName())
+	fmt.Printf("%-25s %s\n", "database-user", conf.DatabaseUser())
+	fmt.Printf("%-25s %s\n", "database-password", strings.Repeat("*", utf8.RuneCountInString(conf.DatabasePassword())))
+	fmt.Printf("%-25s %d\n", "database-conns", conf.DatabaseConns())
+	fmt.Printf("%-25s %d\n", "database-conns-idle", conf.DatabaseConnsIdle())
 
 	return nil
 }

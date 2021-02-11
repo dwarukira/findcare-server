@@ -19,7 +19,12 @@ func logError(result *gorm.DB) {
 type Types map[string]interface{}
 
 // List of database entities and their table names.
-var Entities = Types{}
+var Entities = Types{
+	"errors":            &Error{},
+	"providers":         &Provider{},
+	"services":          &Service{},
+	"provider_services": &ProviderService{},
+}
 
 type RowCount struct {
 	Count int
@@ -83,12 +88,17 @@ func (list Types) Drop() {
 	}
 }
 
+func CreateDefaultFixtures() {
+	CreateDefaultProviders()
+	CreateDefaultServices()
+}
+
 // MigrateDb creates all tables and inserts default entities as needed.
 func MigrateDb() {
 	Entities.Migrate()
 	Entities.WaitForMigration()
 
-	// CreateDefaultFixtures()
+	CreateDefaultFixtures()
 }
 
 // InitTestDb connects to and completely initializes the test database incl fixtures.
@@ -110,7 +120,7 @@ func InitTestDb(driver, dsn string) *Gorm {
 	}
 
 	SetDbProvider(db)
-	ResetTestFixtures()
+	// ResetTestFixtures()
 
 	return db
 }

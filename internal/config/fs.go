@@ -70,3 +70,31 @@ func (c *Config) OriginalsPath() string {
 
 	return fs.Abs(c.options.OriginalsPath)
 }
+
+// PIDFilename returns the filename for storing the server process id (pid).
+func (c *Config) PIDFilename() string {
+	if c.options.PIDFilename == "" {
+		return filepath.Join(c.StoragePath(), "photoprism.pid")
+	}
+
+	return fs.Abs(c.options.PIDFilename)
+}
+
+// LogFilename returns the filename for storing server logs.
+func (c *Config) LogFilename() string {
+	if c.options.LogFilename == "" {
+		return filepath.Join(c.StoragePath(), "findcare.log")
+	}
+
+	return fs.Abs(c.options.LogFilename)
+}
+
+// AssetsPath returns the path to static assets for models and templates.
+func (c *Config) AssetsPath() string {
+	if c.options.AssetsPath == "" {
+		// Try to find the right directory by iterating through a list.
+		c.options.AssetsPath = fs.FindDir(fs.AssetPaths)
+	}
+
+	return fs.Abs(c.options.AssetsPath)
+}

@@ -35,6 +35,7 @@ func DbDialect() string {
 // SetDbProvider sets the provider to get a gorm db connection.
 func SetDbProvider(provider DbProvider) {
 	dbProvider = provider
+	dbProvider.Db().Debug()
 }
 
 // HasDbProvider returns true if a db provider exists.

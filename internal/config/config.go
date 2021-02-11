@@ -8,6 +8,7 @@ import (
 	"github.com/dwarukira/findcare/pkg/fs"
 	"github.com/dwarukira/findcare/pkg/txt"
 	"github.com/jinzhu/gorm"
+	"github.com/klauspost/cpuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/urfave/cli"
@@ -69,5 +70,33 @@ func (c *Config) LogLevel() logrus.Level {
 		return logLevel
 	} else {
 		return logrus.InfoLevel
+	}
+}
+
+// Init creates directories, parses additional config files, opens a database connection and initializes dependencies.
+func (c *Config) Init() error {
+
+	if cpuName := cpuid.CPU.BrandName; cpuName != "" {
+		log.Debugf("config: running on %s", txt.Quote(cpuid.CPU.BrandName))
+	}
+
+	// c.Propagate()
+
+	return c.connectDb()
+}
+
+// Propagate updates config options in other packages as needed.
+func (c *Config) Propagate() {
+	log.SetLevel(c.LogLevel())
+
+}
+
+// Shutdown services and workers.
+func (c *Config) Shutdown() {
+
+	if err := c.CloseDb(); err != nil {
+		log.Errorf("could not close database connection: %s", err)
+	} else {
+		log.Info("closed database connection")
 	}
 }

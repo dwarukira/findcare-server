@@ -9,7 +9,7 @@ import (
 )
 
 const IgnoreFile = ".ppignore"
-const HiddenPath = ".hr"
+const HiddenPath = ".findcare"
 const PathSeparator = string(filepath.Separator)
 const Home = "~"
 const HomePath = Home + PathSeparator
@@ -80,4 +80,15 @@ func PathWritable(path string) bool {
 	}
 
 	return true
+}
+
+// Overwrite overwrites the file with data. Creates file if not present.
+func Overwrite(fileName string, data []byte) bool {
+	f, err := os.Create(fileName)
+	if err != nil {
+		return false
+	}
+
+	_, err = f.Write(data)
+	return err == nil
 }

@@ -1,5 +1,32 @@
 package commands
 
-import "github.com/dwarukira/findcare/internal/event"
+import (
+	"os"
+	"syscall"
+
+	"github.com/dwarukira/findcare/internal/event"
+	"github.com/dwarukira/findcare/pkg/fs"
+	"github.com/sevlyar/go-daemon"
+)
 
 var log = event.Log
+
+// childAlreadyRunning tests if a .pid file at filePath is a running process.
+// it returns the pid value and the running status (true or false).
+func childAlreadyRunning(filePath string) (pid int, running bool) {
+	if !fs.FileExists(filePath) {
+		return pid, false
+	}
+
+	pid, err := daemon.ReadPidFile(filePath)
+	if err != nil {
+		return pid, false
+	}
+
+	process, err := os.FindProcess(int(pid))
+	if err != nil {
+		return pid, false
+	}
+
+	return pid, process.Signal(syscall.Signal(0)) == nil
+}

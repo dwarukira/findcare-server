@@ -21,6 +21,7 @@ func main() {
 		commands.VersionCommand,
 		commands.ConfigCommand,
 		commands.StartCommand,
+		commands.MigrateCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {

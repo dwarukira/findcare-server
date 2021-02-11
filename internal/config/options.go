@@ -48,6 +48,9 @@ type Options struct {
 	HttpMode          string `yaml:"HttpMode" json:"-" flag:"http-mode"`
 	HttpCompression   string `yaml:"HttpCompression" json:"-" flag:"http-compression"`
 	DetachServer      bool   `yaml:"DetachServer" json:"-" flag:"detach-server"`
+	PIDFilename       string `yaml:"PIDFilename" json:"-" flag:"pid-filename"`
+
+	AssetsPath string `yaml:"AssetsPath" json:"-" flag:"assets-path"`
 }
 
 func NewOptions(ctx *cli.Context) *Options {
